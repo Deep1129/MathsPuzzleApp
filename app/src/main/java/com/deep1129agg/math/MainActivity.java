@@ -218,8 +218,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             result = operand[0]+operand[1];
         }
 
-        fillEntry(resultTextViewTag[0]);
-        fillEntry(resultTextViewTag[1]);
         textViewArray[resultTextViewTag[2]].setText(String.valueOf(result));
 
         if(noOfOperators() == 0){
@@ -230,6 +228,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 textViewBooleanArray[i]=false;
             }
         }
+
+        textViewArray[resultTextViewTag[0]].setText(String.valueOf(-1));
+        textViewArray[resultTextViewTag[1]].setText(String.valueOf(-1));
+
+       for (int i=0;i<16;i++){
+           Log.i("for loop","ok");
+            String val = textViewArray[i].getText().toString();
+            Log.i("val", val+" ");
+            if(val.equals("-1")){
+                int minTag = i;
+                while(minTag>3){
+                    String str = textViewArray[minTag-4].getText().toString();
+                    Log.i("String" , str);
+                    Log.i("Stringval" , textViewArray[i].getText().toString());
+
+                    textViewArray[minTag].setText(str);
+                    minTag -= 4;
+                }
+                fillEntry(i%4);
+            }
+       }
+
         Log.i("result", result+" ");
         }catch (Exception e){
             Toast.makeText(this, "Invalid move", Toast.LENGTH_SHORT).show();
@@ -254,7 +274,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 operatorCount++;
             } else if(r == Integer.valueOf(value)){
                gameOn=false;
-               gameResultTextView.setText("You Won!");
+               gameResultTextView.setText("You Have Won!");
            }
         }
         return operatorCount;
