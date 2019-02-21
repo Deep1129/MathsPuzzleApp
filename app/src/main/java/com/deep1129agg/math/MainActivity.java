@@ -219,16 +219,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         textViewArray[resultTextViewTag[2]].setText(String.valueOf(result));
-
-        if(noOfOperators() == 0){
-            Toast.makeText(this, "No more moves available", Toast.LENGTH_SHORT).show();
-
-            for (int i = 0; i<16; i++) {
-                fillEntry(i);
-                textViewBooleanArray[i]=false;
-            }
-        }
-
         textViewArray[resultTextViewTag[0]].setText(String.valueOf(-1));
         textViewArray[resultTextViewTag[1]].setText(String.valueOf(-1));
 
@@ -246,9 +236,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     textViewArray[minTag].setText(str);
                     minTag -= 4;
                 }
-                fillEntry(i%4);
+                if(noOfOperators()<4){
+                    fillOperator(i%4);
+                }else {
+                    fillEntry(i % 4);
+                }
             }
        }
+
+//        if(noOfOperators() == 0){
+//            Toast.makeText(this, "No more moves available", Toast.LENGTH_SHORT).show();
+//
+//            for (int i = 0; i<16; i++) {
+//                fillEntry(i);
+//                textViewBooleanArray[i]=false;
+//            }
+//        }
 
         Log.i("result", result+" ");
         }catch (Exception e){
@@ -278,6 +281,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
            }
         }
         return operatorCount;
+    }
+
+    public void fillOperator(int i){
+        Random rand = new Random();
+        int r = rand.nextInt(5)+10;
+        textViewArray[i].setText(entry[r]);
     }
 
 }
