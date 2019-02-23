@@ -1,15 +1,25 @@
 package com.deep1129agg.math;
 
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.CountDownTimer;
+import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Random;
+
+//put extra level, score
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener  {
 
@@ -29,10 +39,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int operatorCount=0,r;
     boolean[] textViewBooleanArray = new boolean[16];
 
+    ConstraintLayout scoreLayout , gameLayout;
+    TextView playAgainTextView, mainMenuTextView,movesTextView, timerTextView, winLossTextView, scoreTextView;
+    ConstraintLayout layout;
+    int level;
+    int noOfMoves=0;
+    CountDownTimer countDownTimer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        level = getIntent().getExtras().getInt("level",0);
+
+
+        scoreLayout = findViewById(R.id.scoreLayout);
+        gameLayout = findViewById(R.id.gameLayout);
+        layout = findViewById(R.id.layout);
 
         textView1 = findViewById(R.id.textView1);
         textView2 = findViewById(R.id.textView2);
@@ -51,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         textView15 = findViewById(R.id.textView15);
         textView16 = findViewById(R.id.textView16);
         resultTextView = findViewById(R.id.resultTextView);
-        gameResultTextView = findViewById(R.id.gameResultTextView);
+//        gameResultTextView = findViewById(R.id.gameResultTextView);
         textViewArray = new TextView[16];
         textViewArray[0] = textView1;
         textViewArray[1] = textView2;
@@ -69,6 +93,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         textViewArray[13] = textView14;
         textViewArray[14] = textView15;
         textViewArray[15] = textView16;
+
+        playAgainTextView = findViewById(R.id.playAgainTextView);
+        mainMenuTextView = findViewById(R.id.mainMenuTextView);
+        movesTextView = findViewById(R.id.movesTextView);
+        timerTextView = findViewById(R.id.timerTextView);
+        winLossTextView = findViewById(R.id.winLossTextView);
+        scoreTextView = findViewById(R.id.scoreTextView);
 
         textViewBooleanArray[0] = textView1Boolean;
         textViewBooleanArray[1] = textView2Boolean;
@@ -89,10 +120,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         gameOn = true;
 
-//        for(int i = 0 ; i<16; i++) {
-//            textViewArray[i].setOnClickListener(this);
-//
-//        }
+        playAgainTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scoreLayout.setVisibility(View.INVISIBLE);
+               setGame();
+
+            }
+        });
+        mainMenuTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(),StartActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
 
         for (int i = 0; i<16; i++) {
             textViewArray[i].setOnClickListener(this);
@@ -100,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             textViewBooleanArray[i]=false;
         }
         setResultValue();
+        setTimer();
     }
 
     public void fillEntry(int i){
@@ -146,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             textViewArray[i].setBackgroundColor(Color.rgb(165, 143, 250));
                             textViewBooleanArray[i] = true;
                             if (noOfClicks == 3) {
+                                noOfMoves++;
                                 calculateResult(resultTextViewTag, textViewforResult);
                             } else {
                                 prevTag = intTag;
@@ -154,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
 
                         } else {
-                            textViewArray[i].setBackgroundColor(Color.rgb(255, 237, 217));
+                            textViewArray[i].setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null));
                             noOfClicks--;
                             textViewBooleanArray[i] = false;
                         }
@@ -175,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         prevTag = 0;
         noOfClicks=0;
         for(int i = 0 ; i<16; i++) {
-            textViewArray[i].setBackgroundColor(Color.rgb(255, 237, 217));
+            textViewArray[i].setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.colorPrimary, null));
             textViewBooleanArray[i]=false;
         }
         try {
@@ -218,6 +264,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             result = operand[0]+operand[1];
         }
 
+        movesTextView.setText(String.valueOf(noOfMoves));
         textViewArray[resultTextViewTag[2]].setText(String.valueOf(result));
         textViewArray[resultTextViewTag[0]].setText(String.valueOf(-1));
         textViewArray[resultTextViewTag[1]].setText(String.valueOf(-1));
@@ -256,17 +303,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.i("result", result+" ");
         }catch (Exception e){
             Toast.makeText(this, "Invalid move", Toast.LENGTH_SHORT).show();
+            noOfMoves--;
         }
     }
 
     public void playAgainButton(View view){
-        for (int i = 0; i<16; i++) {
-            fillEntry(i);
-            textViewBooleanArray[i]=false;
-            gameOn=true;
-            gameResultTextView.setText(" ");
-        }
-        setResultValue();
+       setGame();
     }
 
     public int noOfOperators(){
@@ -277,7 +319,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 operatorCount++;
             } else if(r == Integer.valueOf(value)){
                gameOn=false;
-               gameResultTextView.setText("You Have Won!");
+               scoreLayout.setVisibility(View.VISIBLE);
+               winLossTextView.setText("You Have Won");
+               countDownTimer.cancel();
+//               int score = (Integer.valueOf(timerTextView.getText().toString())+1)*(40-Integer.valueOf(movesTextView.getText().toString()));
+//               scoreTextView.setText(String.valueOf(score));
+               LevelActivity.levelbooleanArray[level]=true;
+
            }
         }
         return operatorCount;
@@ -287,6 +335,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Random rand = new Random();
         int r = rand.nextInt(5)+10;
         textViewArray[i].setText(entry[r]);
+    }
+
+    public  void setGame(){
+        for (int i = 0; i<16; i++) {
+            fillEntry(i);
+            textViewBooleanArray[i]=false;
+            gameOn=true;
+        }
+        movesTextView.setText("0");
+        noOfMoves=0;
+        setResultValue();
+        setTimer();
+    }
+
+    public void setTimer(){
+        timerTextView.setText("60s");
+        countDownTimer = new CountDownTimer( 60100, 1000){
+
+
+            @Override
+            public void onTick(long l) {
+                timerTextView.setText(String.valueOf(l/1000)+ "s");
+            }
+
+            @Override
+            public void onFinish() {
+                gameOn=false;
+                scoreLayout.setVisibility(View.VISIBLE);
+                winLossTextView.setText("Time's Up");
+//                int score = (Integer.valueOf(timerTextView.getText().toString())+1)*(40-Integer.valueOf(movesTextView.getText().toString()));
+//                scoreTextView.setText(String.valueOf(score/5));
+
+            }
+        }.start();
     }
 
 }
